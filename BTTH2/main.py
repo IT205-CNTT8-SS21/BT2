@@ -1,8 +1,8 @@
 import logging
 from pos_logic import (
     DRINK_MENU,
-    ItemNotFoundError,
-    InvalidQuantityError,
+    ITEM_NOT_FOUND_MSG,
+    INVALID_QUANTITY_MSG,
     add_to_order,
     calculate_total,
 )
@@ -23,7 +23,10 @@ def handle_add_to_order(current_order: list):
 
     try:
         add_to_order(current_order, drink_code, quantity_str)
-    except (ValueError, ItemNotFoundError, InvalidQuantityError) as e:
+    except KeyError as e:
+        # e.args[0] lấy ra chuỗi thông báo lỗi được định nghĩa sẵn
+        print(e.args[0])
+    except ValueError as e:
         print(e)
 
 

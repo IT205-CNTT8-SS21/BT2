@@ -1,6 +1,6 @@
 import logging
 
-# Cấu hình logging cơ bản hiển thị ra màn hình Terminal
+# Cấu hình logging cơ bản hiển thị ra màn hình Terminal theo yêu cầu
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -12,27 +12,20 @@ DRINK_MENU = {
     "T1": {"name": "Trà Sen Vàng", "price": 45000},
 }
 
-
-class ItemNotFoundError(Exception):
-    """Ngoại lệ xảy ra khi mã đồ uống không tồn tại trong thực đơn."""
-
-    pass
-
-
-class InvalidQuantityError(Exception):
-    """Ngoại lệ xảy ra khi số lượng nhập vào nhỏ hơn hoặc bằng 0."""
-
-    pass
+# Thay vì tạo Class ngoại lệ, ta định nghĩa các chuỗi mã lỗi (Custom Error Messages)
+# Điều này giúp code thuần túy xử lý chuỗi dựa trên Exception gốc của Python
+ITEM_NOT_FOUND_MSG = "Mã đồ uống không hợp lệ, vui lòng kiểm tra lại thực đơn!"
+INVALID_QUANTITY_MSG = "Số lượng phải lớn hơn 0!"
 
 
-def calculate_total(order_list: list) -> float:
+def calculate_total(order_list: list) -> int:
     """Tính tổng số tiền của toàn bộ đơn hàng trong giỏ.
 
     Args:
         order_list (list): Danh sách các món ăn trong giỏ hàng hiện tại.
 
     Returns:
-        float: Tổng giá trị đơn hàng.
+        int: Tổng giá trị đơn hàng.
     """
     total = 0
     for item in order_list:
@@ -43,15 +36,9 @@ def calculate_total(order_list: list) -> float:
 def add_to_order(order_list: list, drink_code: str, quantity_str: str):
     """Xử lý nghiệp vụ kiểm tra và thêm món ăn vào giỏ hàng.
 
-    Args:
-        order_list (list): Giỏ hàng hiện tại cần thêm món.
-        drink_code (str): Mã đồ uống do người dùng nhập.
-        quantity_str (str): Chuỗi số lượng do người dùng nhập.
-
     Raises:
-        ValueError: Nếu số lượng không phải số nguyên hợp lệ.
-        ItemNotFoundError: Nếu mã đồ uống không nằm trong DRINK_MENU.
-        InvalidQuantityError: Nếu số lượng <= 0.
+        ValueError: Nếu số lượng không phải số nguyên hoặc nhỏ hơn hoặc bằng 0.
+        KeyError: Nếu mã đồ uống không nằm trong DRINK_MENU.
     """
     # Chuẩn hóa chuỗi nhập: viết hoa và xóa khoảng trắng thừa
     code = drink_code.strip().upper()
@@ -63,17 +50,15 @@ def add_to_order(order_list: list, drink_code: str, quantity_str: str):
         logging.error("ValueError - Invalid quantity input")
         raise ValueError("Vui lòng nhập số lượng là một số nguyên!")
 
-    # Bẫy 2: Kiểm tra mã đồ uống tồn tại
+    # Bẫy 2: Kiểm tra mã đồ uống tồn tại bằng KeyError (Lỗi có sẵn của Python)
     if code not in DRINK_MENU:
         logging.warning(f"ItemNotFoundError - Code: {code}")
-        raise ItemNotFoundError(
-            "Mã đồ uống không hợp lệ, vui lòng kiểm tra lại thực đơn!"
-        )
+        raise KeyError(ITEM_NOT_FOUND_MSG)
 
-    # Bẫy 3: Kiểm tra số lượng hợp lệ (> 0)
+    # Bẫy 3: Kiểm tra số lượng hợp lệ (> 0) bằng ValueError
     if quantity <= 0:
         logging.warning(f"InvalidQuantityError - Quantity: {quantity}")
-        raise InvalidQuantityError("Số lượng phải lớn hơn 0!")
+        raise ValueError(INVALID_QUANTITY_MSG)
 
     # Nếu tất cả hợp lệ, tiến hành thêm vào giỏ hàng
     drink_info = DRINK_MENU[code]
